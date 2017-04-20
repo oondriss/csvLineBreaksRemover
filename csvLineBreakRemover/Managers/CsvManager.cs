@@ -94,16 +94,21 @@ namespace csvLineBreakRemover.Managers
         private bool IsFullRow(string line, out string newLine)
         {
             newLine = "";
-            var columns = line.Count(i => i == ';') + 1;
+            var editedLine = line.Replace("; ", " ");
+            var columns = editedLine.Count(i => i == ';') + 1;
             if (columns == 54)
             {
-                newLine = line;
+                newLine = editedLine;
                 return true;
             }
             else if (columns == 53)
             {
-                newLine = GetRepairedLine(line);
+                newLine = GetRepairedLine(editedLine);
                 return true;
+            }
+            else if (columns > 54)
+            {
+                throw new Exception();
             }
             else
             {
@@ -137,15 +142,24 @@ namespace csvLineBreakRemover.Managers
                     firstLine = false;
                     continue;
                 }
-                if (IsFullRow(currLine, out newLine))
+                try
                 {
-                    _newLines.Add(FixString(newLine));
-                    currLine = line;
+                    if (IsFullRow(currLine, out newLine))
+                    {
+                        _newLines.Add(FixString(newLine));
+                        currLine = line;
+                    }
+                    else
+                    {
+                        currLine += line;
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    currLine += line;
+                    currLine = "";
+                    continue;
                 }
+                
             }
         }
 
